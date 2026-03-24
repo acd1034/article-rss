@@ -1,18 +1,16 @@
 import json
 import logging
-import os
 import time
 import typing as _ty
 
 import google.genai.errors
-from dotenv import load_dotenv
 from google import genai
 from joblib import Parallel, delayed
 
 from .arxiv_fetcher import Paper
 
-load_dotenv()
-_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+logger = logging.getLogger(__name__)
+client = genai.Client()
 Model = _ty.Literal["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
 
 
@@ -25,14 +23,14 @@ def ask_gemini(prompt: str, model: Model) -> str:
     """
     for _ in range(10):
         try:
-            res = _client.models.generate_content(
+            res = client.models.generate_content(
                 model=model, contents=prompt, config={"temperature": 0.0}
             )
             assert res.text is not None
             return res.text.strip()
         except google.genai.errors.APIError as e:
             if hasattr(e, "code") and e.code in [429, 500, 502, 503]:
-                logging.warning(f"Gemini API error: {e}")
+                logger.warning(f"Gemini API error: {e}")
                 delay = 61
                 if e.code == 429:
                     try:
@@ -41,10 +39,10 @@ def ask_gemini(prompt: str, model: Model) -> str:
                             + 1
                         )
                     except Exception as e2:
-                        logging.warning(
+                        logger.warning(
                             f"Failed to parse retry delay: {e2}. Using default {delay} seconds."
                         )
-                logging.info(f"Retrying after {delay} seconds...")
+                logger.info(f"Retrying after {delay} seconds...")
                 time.sleep(delay)
                 continue
             else:
@@ -55,13 +53,11 @@ def ask_gemini(prompt: str, model: Model) -> str:
 def recommend_papers_batch(
     recommend_prompt: str, papers_batch: list[Paper], wait: bool = True
 ) -> list[bool]:
-    papers_batch_str = ""
+    prompt = recommend_prompt
     for i, paper in enumerate(papers_batch):
-        papers_batch_str += f"[{i}] {paper.title.replace('\n', ' ')}\nAbstract: {paper.summary}\n----------\n"
-    res_batch = ask_gemini(
-        recommend_prompt + papers_batch_str,
-        "gemini-2.5-flash",
-    )
+        prompt += f"\n----------\n[{i}] {paper.title.replace('\n', ' ')}\nAbstract: {paper.summary}"
+    logger.info("prompt=%s", prompt)
+    res_batch = ask_gemini(prompt, "gemini-2.5-flash")
     if wait:
         time.sleep(60)
     res_batch_dict = json.loads(res_batch.replace("```json", "").replace("```", ""))

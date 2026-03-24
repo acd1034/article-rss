@@ -5,7 +5,7 @@ from feedgen.feed import FeedGenerator
 from .arxiv_fetcher import Paper
 
 
-def generate_rss_file(papers: list[Paper], deploy_url: str, xml_path: str) -> None:
+def generate_rss_file(papers: list[Paper], deploy_url: str, output_path: str) -> None:
     fg = FeedGenerator()
     fg.id(deploy_url)
     fg.link(href=deploy_url, rel="alternate")
@@ -22,5 +22,5 @@ def generate_rss_file(papers: list[Paper], deploy_url: str, xml_path: str) -> No
         fe.pubDate(paper.updated)
         fe.description(paper.summary + "\n" + ", ".join(paper.authors))
 
-    fg.rss_file(xml_path)
-    logging.info("RSS written to %s", xml_path)
+    fg.rss_file(output_path)
+    logging.info("RSS written to %s", output_path)

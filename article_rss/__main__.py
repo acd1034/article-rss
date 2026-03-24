@@ -12,13 +12,15 @@ from .arxiv_fetcher import fetch_papers_for_date
 from .llm_utils import recommend_papers
 from .rss_generator import generate_rss_file
 
+logger = logging.getLogger(__name__)
+
 
 @_dc.dataclass
 class Main:
     deploy_url: str
     categories: list[str]
     recommend_prompt: str
-    xml_path: str
+    output_path: str
     yymmdd: _ty.Optional[str] = None
     batch_size: int = 25
     max_njobs: int = 8
@@ -35,13 +37,13 @@ class Main:
         else:
             today_jst = datetime.now(ZoneInfo("Asia/Tokyo"))
             yymmdd = today_jst.strftime("%y%m%d")
-            logging.info(f"yymmdd is not specified. Using today: {yymmdd}")
+            logger.info(f"yymmdd is not specified. Using today: {yymmdd}")
 
         fetched_papers = fetch_papers_for_date(
             self.categories,
             datetime.strptime(yymmdd, "%y%m%d").replace(tzinfo=ZoneInfo("Asia/Tokyo")),
         )
-        logging.info(f"Fetched {len(fetched_papers)} papers.")
+        logger.info(f"Fetched {len(fetched_papers)} papers.")
 
         are_recommended = recommend_papers(
             self.recommend_prompt, fetched_papers, self.batch_size, self.max_njobs
@@ -50,12 +52,12 @@ class Main:
         for is_recommended, paper in zip(are_recommended, fetched_papers, strict=False):
             if is_recommended:
                 recommended_papers.append(paper)
-        logging.info(f"Recommend {len(recommended_papers)} papers.")
+        logger.info(f"Recommend {len(recommended_papers)} papers.")
 
         generate_rss_file(
             recommended_papers,
             self.deploy_url,
-            self.xml_path,
+            self.output_path,
         )
 
 

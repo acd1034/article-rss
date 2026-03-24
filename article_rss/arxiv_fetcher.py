@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 import feedparser
 import requests
 
+logger = logging.getLogger(__name__)
 ARXIV_API_URL = (
     "http://export.arxiv.org/api/query?"
     "search_query=cat:{cat}+AND+submittedDate:[{start}+TO+{end}]"
@@ -56,7 +57,7 @@ def fetch_papers_for_date(categories: list[str], date_jst: datetime) -> list[Pap
                 )
                 papers.append(paper)
         except Exception as e:
-            logging.error(f"Error fetching papers for category {cat}: {e}")
+            logger.error(f"Error fetching papers for category {cat}: {e}")
     seen = set()
     unique_papers = []
     for paper in papers:

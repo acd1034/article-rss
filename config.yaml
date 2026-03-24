@@ -16,6 +16,6 @@ recommend_prompt: |
   以下に論文タイトルとAbstractのペアが複数与えられるのでyes/noで判定してください。返答はjson形式で
   {"0": "yes", "1": "no", ...}
   のようにしてください。
-xml_path: index.xml
+output_path: index.xml
 yymmdd: "260324"
 logging_config: logging.yaml
