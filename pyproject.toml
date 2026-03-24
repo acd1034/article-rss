@@ -9,7 +9,7 @@
 # Remove a package
 # $ uv remove <package>
 [project]
-name = "sample"
+name = "article_rss"
 version = "0.1.0"
 description = ""
 requires-python = ">=3.14"

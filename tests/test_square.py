@@ -1,4 +1,4 @@
-from sample import square
+from article_rss import square
 
 
 def test_square():
