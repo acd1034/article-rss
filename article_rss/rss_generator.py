@@ -4,6 +4,8 @@ from feedgen.feed import FeedGenerator
 
 from .arxiv_fetcher import Paper
 
+logger = logging.getLogger(__name__)
+
 
 def generate_rss_file(papers: list[Paper], deploy_url: str, output_path: str) -> None:
     fg = FeedGenerator()
@@ -23,4 +25,4 @@ def generate_rss_file(papers: list[Paper], deploy_url: str, output_path: str) ->
         fe.description(paper.summary + "\n" + ", ".join(paper.authors))
 
     fg.rss_file(output_path)
-    logging.info("RSS written to %s", output_path)
+    logger.info("RSS written to %s", output_path)
