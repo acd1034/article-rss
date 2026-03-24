@@ -1,0 +1,61 @@
+name: Update RSS Feed
+
+on:
+  # schedule:
+  #   # 11:17 JST = 02:17 UTC
+  #   - cron: "17 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Tokyo
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run RSS update script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          uv run python -m article_rss --config config.yaml
+          mkdir docs
+          mv index.xml docs/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: feed
+          path: docs
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    timeout-minutes: 10
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
