@@ -43,7 +43,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv.sources]
-tellurium = { git = "https://github.com/acd1034/tellurium.git", rev = "c047b641aae2b156d1f4c302cc44461c457e5dd9" }
+tellurium = { git = "https://github.com/acd1034/tellurium.git", rev = "2fe86028d9512ced34b21acb5f1ba0c52ce8b30f" }
 
 [tool.ruff]
 # 1行の最大文字数 (default: 88)
